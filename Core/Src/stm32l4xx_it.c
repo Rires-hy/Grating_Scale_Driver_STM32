@@ -42,7 +42,11 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+int32_t xPul, yPul;
+uint8_t xSpeed, ySpeed;
+uint8_t xSen = 1;
+uint8_t ySen = 1;
+int lastMode = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -59,7 +63,7 @@
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
-extern TIM_HandleTypeDef htim5;
+extern int highMode;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -216,6 +220,20 @@ void RCC_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles EXTI line0 interrupt.
+  */
+void EXTI0_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI0_IRQn 0 */
+
+  /* USER CODE END EXTI0_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+  /* USER CODE BEGIN EXTI0_IRQn 1 */
+
+  /* USER CODE END EXTI0_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM1 break interrupt and TIM15 global interrupt.
   */
 void TIM1_BRK_TIM15_IRQHandler(void)
@@ -239,6 +257,43 @@ void TIM1_UP_TIM16_IRQHandler(void)
   /* USER CODE END TIM1_UP_TIM16_IRQn 0 */
   HAL_TIM_IRQHandler(&htim1);
   /* USER CODE BEGIN TIM1_UP_TIM16_IRQn 1 */
+  static int xcnt = 0;
+  static int ycnt = 0;
+
+  if (xSpeed>1 && ((xcnt %xSpeed) == 0)) {
+	  if(xPul!=0) {
+	    if(xPul>0) {
+        HAL_GPIO_WritePin(XDIR_GPIO_Port, XDIR_Pin, GPIO_PIN_SET);
+        xPul--;
+      }
+	    else if(xPul<0) {
+        HAL_GPIO_WritePin(XDIR_GPIO_Port, XDIR_Pin, GPIO_PIN_RESET);
+        xPul++;
+      }
+	  //  HAL_GPIO_WritePin(LD_G_GPIO_Port, LD_G_Pin, (lastMode>0)?GPIO_PIN_RESET:GPIO_PIN_SET);
+	    HAL_GPIO_TogglePin(XCLK_GPIO_Port, XCLK_Pin);
+	  }
+	  else {
+	  //  HAL_GPIO_WritePin(LD_G_GPIO_Port, LD_G_Pin, (lastMode>0)?GPIO_PIN_SET:GPIO_PIN_RESET);
+	  }
+  }
+  xcnt++;
+  if (ySpeed>1 && ((ycnt %ySpeed) == 0)) {
+ 	  if(yPul!=0) {
+ 	    if(yPul>0) {
+ 	      HAL_GPIO_WritePin(YDIR_GPIO_Port, YDIR_Pin, GPIO_PIN_SET);
+ 	      yPul--;
+ 	    }else if(yPul<0) {
+ 	      HAL_GPIO_WritePin(YDIR_GPIO_Port, YDIR_Pin, GPIO_PIN_RESET);
+ 	      yPul++;
+ 	    }
+ 	   // HAL_GPIO_WritePin(LD_R_GPIO_Port, LD_R_Pin, (lastMode>0)?GPIO_PIN_RESET:GPIO_PIN_SET);
+ 		  HAL_GPIO_TogglePin(YCLK_GPIO_Port, YCLK_Pin);
+ 	  }else {
+ 	    //HAL_GPIO_WritePin(LD_R_GPIO_Port, LD_R_Pin, (lastMode>0)?GPIO_PIN_SET:GPIO_PIN_RESET);
+ 	  }
+   }
+   ycnt++;
 
   /* USER CODE END TIM1_UP_TIM16_IRQn 1 */
 }
@@ -301,20 +356,6 @@ void EXTI15_10_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles TIM5 global interrupt.
-  */
-void TIM5_IRQHandler(void)
-{
-  /* USER CODE BEGIN TIM5_IRQn 0 */
-
-  /* USER CODE END TIM5_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim5);
-  /* USER CODE BEGIN TIM5_IRQn 1 */
-
-  /* USER CODE END TIM5_IRQn 1 */
-}
-
-/**
   * @brief This function handles USB OTG FS global interrupt.
   */
 void OTG_FS_IRQHandler(void)
@@ -329,6 +370,17 @@ void OTG_FS_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  /* Prevent unused argument(s) compilation warning */
+  if (GPIO_Pin == JOY_CENTER_Pin) {
+    if(lastMode < 1)
+      highMode = 2;
+    else if (lastMode > 1)
+      highMode = 0;
+    lastMode = 2 - lastMode;
+  }
+}
 
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
