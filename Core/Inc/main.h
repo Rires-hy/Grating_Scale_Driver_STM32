@@ -50,8 +50,6 @@ extern "C" {
 
 /* USER CODE END EM */
 
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
@@ -60,9 +58,6 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define JOY_CENTER_Pin GPIO_PIN_0
-#define JOY_CENTER_GPIO_Port GPIOA
-#define JOY_CENTER_EXTI_IRQn EXTI0_IRQn
 #define JOY_UP_Pin GPIO_PIN_3
 #define JOY_UP_GPIO_Port GPIOA
 #define JOY_DOWN_Pin GPIO_PIN_5
