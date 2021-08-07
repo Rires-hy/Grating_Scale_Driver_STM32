@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 #include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -48,8 +49,30 @@ TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 TIM_HandleTypeDef htim5;
 
+/* Definitions for defaultTask */
+osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for myTask02 */
+osThreadId_t myTask02Handle;
+const osThreadAttr_t myTask02_attributes = {
+  .name = "myTask02",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
+/* Definitions for myTask03 */
+osThreadId_t myTask03Handle;
+const osThreadAttr_t myTask03_attributes = {
+  .name = "myTask03",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
 /* USER CODE BEGIN PV */
 int cnt,cnt_old ;
+int tim4Cnt,tim5Cnt;
 int feedback;
 int laps=0;
 uint8_t X0,Y0;
@@ -71,6 +94,10 @@ static void MX_TIM4_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM5_Init(void);
 static void MX_TIM2_Init(void);
+void StartDefaultTask(void *argument);
+void StartTask02(void *argument);
+void StartTask03(void *argument);
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -110,7 +137,6 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM1_Init();
-  MX_USB_DEVICE_Init();
   MX_TIM4_Init();
   MX_TIM3_Init();
   MX_TIM5_Init();
@@ -128,15 +154,55 @@ int main(void)
   TIM5->CNT=750000;
   TIM4->SR=65;
   TIM4->CNT=750000;
+
+
+
+
   /* USER CODE END 2 */
 
+  /* Init scheduler */
+  osKernelInitialize();
+
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
+  /* creation of defaultTask */
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+
+  /* creation of myTask02 */
+  myTask02Handle = osThreadNew(StartTask02, NULL, &myTask02_attributes);
+
+  /* creation of myTask03 */
+  myTask03Handle = osThreadNew(StartTask03, NULL, &myTask03_attributes);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+  /* add events, ... */
+  /* USER CODE END RTOS_EVENTS */
+
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-  xSpeed = 250U;
-       ySpeed = 250U;
-       xSen = 2U;
-       ySen = 2U;
 
   while (1)
   {
@@ -147,55 +213,7 @@ int main(void)
 
 
 
-	  if (HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_12)==GPIO_PIN_RESET){
-		  	//  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2,GPIO_PIN_RESET);
-		  	  X0=1;
-	  }
-	  else {
-		//  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2,GPIO_PIN_SET);
-		  X0=0;
-	  }
 
-
-	  if (HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_13)==GPIO_PIN_RESET){
-		  //HAL_GPIO_WritePin(GPIOE, GPIO_PIN_8,GPIO_PIN_RESET);
-		  	  Y0=1;
-	  }
-	  else  {
-		 // HAL_GPIO_WritePin(GPIOE, GPIO_PIN_8,GPIO_PIN_SET);
-		  Y0=0;
-	  }
-
-
-	  if(highMode>1) {
-	    xSpeed = 50U;
-	    ySpeed = 50U;
-	    xSen = 10U;
-	    ySen = 10U;
-	    highMode = 1;
-	  }else if (highMode < 1) {
-	    xSpeed = 250U;
-      ySpeed = 250U;
-      xSen = 2U;
-      ySen = 2U;
-      highMode = 1;
-	  }
-
-	  if (HAL_GPIO_ReadPin(JOY_DOWN_GPIO_Port, JOY_DOWN_Pin) == GPIO_PIN_SET)
-	      {
-	  	    xPul = -(xSen);
-	      }else if (HAL_GPIO_ReadPin(JOY_UP_GPIO_Port, JOY_UP_Pin) == GPIO_PIN_SET)
-	      {
-	        xPul = (xSen);
-	      }
-	  if (HAL_GPIO_ReadPin(JOY_DOWN_GPIO_Port, JOY_DOWN_Pin) == GPIO_PIN_SET)
-	  {
-		  yPul = ySen;
-	  }
-	  else if (HAL_GPIO_ReadPin(JOY_UP_GPIO_Port, JOY_UP_Pin) == GPIO_PIN_SET)
-	  {
-		  yPul = -ySen;
-	  }
 
 
     /* USER CODE END WHILE */
@@ -567,7 +585,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(YCLK_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 }
@@ -658,6 +676,113 @@ void CDC_ReceiveCallback(uint8_t *buf, uint32_t len)
 
 
 /* USER CODE END 4 */
+
+/* USER CODE BEGIN Header_StartDefaultTask */
+/**
+  * @brief  Function implementing the defaultTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartDefaultTask */
+void StartDefaultTask(void *argument)
+{
+  /* init code for USB_DEVICE */
+  MX_USB_DEVICE_Init();
+  /* USER CODE BEGIN 5 */
+  /* Infinite loop */
+  for(;;)
+  {
+	  if (HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_12)==GPIO_PIN_RESET){
+	 		  	//  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2,GPIO_PIN_RESET);
+	 		  	  X0=1;
+	 	  }
+	 	  else {
+	 		//  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2,GPIO_PIN_SET);
+	 		  X0=0;
+	 	  }
+
+
+	 	  if (HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_13)==GPIO_PIN_RESET){
+	 		  //HAL_GPIO_WritePin(GPIOE, GPIO_PIN_8,GPIO_PIN_RESET);
+	 		  	  Y0=1;
+	 	  }
+	 	  else  {
+	 		 // HAL_GPIO_WritePin(GPIOE, GPIO_PIN_8,GPIO_PIN_SET);
+	 		  Y0=0;
+	 	  }
+
+
+	 	  if(highMode>1) {
+	 	    xSpeed = 50U;
+	 	    ySpeed = 50U;
+	 	    xSen = 10U;
+	 	    ySen = 10U;
+	 	    highMode = 1;
+	 	  }else if (highMode < 1) {
+	 	    xSpeed = 250U;
+	       ySpeed = 250U;
+	       xSen = 2U;
+	       ySen = 2U;
+	       highMode = 1;
+	 	  }
+
+	 	  if (HAL_GPIO_ReadPin(JOY_DOWN_GPIO_Port, JOY_DOWN_Pin) == GPIO_PIN_SET)
+	 	      {
+	 	  	    xPul = -(xSen);
+	 	      }else if (HAL_GPIO_ReadPin(JOY_UP_GPIO_Port, JOY_UP_Pin) == GPIO_PIN_SET)
+	 	      {
+	 	        xPul = (xSen);
+	 	      }
+	 	  if (HAL_GPIO_ReadPin(JOY_DOWN_GPIO_Port, JOY_DOWN_Pin) == GPIO_PIN_SET)
+	 	  {
+	 		  yPul = ySen;
+	 	  }
+	 	  else if (HAL_GPIO_ReadPin(JOY_UP_GPIO_Port, JOY_UP_Pin) == GPIO_PIN_SET)
+	 	  {
+	 		  yPul = -ySen;
+	 	  }
+    osDelay(1);
+  }
+  /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_StartTask02 */
+/**
+* @brief Function implementing the myTask02 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTask02 */
+void StartTask02(void *argument)
+{
+  /* USER CODE BEGIN StartTask02 */
+  /* Infinite loop */
+  for(;;)
+  {
+	  tim4Cnt=__HAL_TIM_GET_COUNTER(&htim4);
+	  tim5Cnt=__HAL_TIM_GET_COUNTER(&htim5);
+    osDelay(1);
+  }
+  /* USER CODE END StartTask02 */
+}
+
+/* USER CODE BEGIN Header_StartTask03 */
+/**
+* @brief Function implementing the myTask03 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTask03 */
+void StartTask03(void *argument)
+{
+  /* USER CODE BEGIN StartTask03 */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartTask03 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
