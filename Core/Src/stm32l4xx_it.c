@@ -64,6 +64,7 @@ int lastMode = 0;
 /* External variables --------------------------------------------------------*/
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim2;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -189,19 +190,6 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles RCC global interrupt.
-  */
-void RCC_IRQHandler(void)
-{
-  /* USER CODE BEGIN RCC_IRQn 0 */
-
-  /* USER CODE END RCC_IRQn 0 */
-  /* USER CODE BEGIN RCC_IRQn 1 */
-
-  /* USER CODE END RCC_IRQn 1 */
-}
-
-/**
   * @brief This function handles TIM1 break interrupt and TIM15 global interrupt.
   */
 void TIM1_BRK_TIM15_IRQHandler(void)
@@ -225,44 +213,43 @@ void TIM1_UP_TIM16_IRQHandler(void)
   /* USER CODE END TIM1_UP_TIM16_IRQn 0 */
   HAL_TIM_IRQHandler(&htim1);
   /* USER CODE BEGIN TIM1_UP_TIM16_IRQn 1 */
-  static int xcnt = 0;
-  static int ycnt = 0;
+    static int xcnt = 0;
+      static int ycnt = 0;
 
-  if (xSpeed>1 && ((xcnt %xSpeed) == 0)) {
-	  if(xPul!=0) {
-	    if(xPul>0) {
-        HAL_GPIO_WritePin(XDIR_GPIO_Port, XDIR_Pin, GPIO_PIN_SET);
-        xPul--;
+      if (xSpeed>1 && ((xcnt %xSpeed) == 0)) {
+    	  if(xPul!=0) {
+    	    if(xPul>0) {
+            HAL_GPIO_WritePin(XDIR_GPIO_Port, XDIR_Pin, GPIO_PIN_SET);
+            xPul--;
+          }
+    	    else if(xPul<0) {
+            HAL_GPIO_WritePin(XDIR_GPIO_Port, XDIR_Pin, GPIO_PIN_RESET);
+            xPul++;
+          }
+    	  //  HAL_GPIO_WritePin(LD_G_GPIO_Port, LD_G_Pin, (lastMode>0)?GPIO_PIN_RESET:GPIO_PIN_SET);
+    	    HAL_GPIO_TogglePin(XCLK_GPIO_Port, XCLK_Pin);
+    	  }
+    	  else {
+    	  //  HAL_GPIO_WritePin(LD_G_GPIO_Port, LD_G_Pin, (lastMode>0)?GPIO_PIN_SET:GPIO_PIN_RESET);
+    	  }
       }
-	    else if(xPul<0) {
-        HAL_GPIO_WritePin(XDIR_GPIO_Port, XDIR_Pin, GPIO_PIN_RESET);
-        xPul++;
-      }
-	  //  HAL_GPIO_WritePin(LD_G_GPIO_Port, LD_G_Pin, (lastMode>0)?GPIO_PIN_RESET:GPIO_PIN_SET);
-	    HAL_GPIO_TogglePin(XCLK_GPIO_Port, XCLK_Pin);
-	  }
-	  else {
-	  //  HAL_GPIO_WritePin(LD_G_GPIO_Port, LD_G_Pin, (lastMode>0)?GPIO_PIN_SET:GPIO_PIN_RESET);
-	  }
-  }
-  xcnt++;
-  if (ySpeed>1 && ((ycnt %ySpeed) == 0)) {
- 	  if(yPul!=0) {
- 	    if(yPul>0) {
- 	      HAL_GPIO_WritePin(YDIR_GPIO_Port, YDIR_Pin, GPIO_PIN_SET);
- 	      yPul--;
- 	    }else if(yPul<0) {
- 	      HAL_GPIO_WritePin(YDIR_GPIO_Port, YDIR_Pin, GPIO_PIN_RESET);
- 	      yPul++;
- 	    }
- 	   // HAL_GPIO_WritePin(LD_R_GPIO_Port, LD_R_Pin, (lastMode>0)?GPIO_PIN_RESET:GPIO_PIN_SET);
- 		  HAL_GPIO_TogglePin(YCLK_GPIO_Port, YCLK_Pin);
- 	  }else {
- 	    //HAL_GPIO_WritePin(LD_R_GPIO_Port, LD_R_Pin, (lastMode>0)?GPIO_PIN_SET:GPIO_PIN_RESET);
- 	  }
-   }
-   ycnt++;
-
+      xcnt++;
+      if (ySpeed>1 && ((ycnt %ySpeed) == 0)) {
+     	  if(yPul!=0) {
+     	    if(yPul>0) {
+     	      HAL_GPIO_WritePin(YDIR_GPIO_Port, YDIR_Pin, GPIO_PIN_SET);
+     	      yPul--;
+     	    }else if(yPul<0) {
+     	      HAL_GPIO_WritePin(YDIR_GPIO_Port, YDIR_Pin, GPIO_PIN_RESET);
+     	      yPul++;
+     	    }
+     	   // HAL_GPIO_WritePin(LD_R_GPIO_Port, LD_R_Pin, (lastMode>0)?GPIO_PIN_RESET:GPIO_PIN_SET);
+     		  HAL_GPIO_TogglePin(YCLK_GPIO_Port, YCLK_Pin);
+     	  }else {
+     	    //HAL_GPIO_WritePin(LD_R_GPIO_Port, LD_R_Pin, (lastMode>0)?GPIO_PIN_SET:GPIO_PIN_RESET);
+     	  }
+       }
+       ycnt++;
   /* USER CODE END TIM1_UP_TIM16_IRQn 1 */
 }
 
@@ -281,17 +268,53 @@ void TIM1_TRG_COM_TIM17_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles TIM1 capture compare interrupt.
+  * @brief This function handles TIM2 global interrupt.
   */
-void TIM1_CC_IRQHandler(void)
+void TIM2_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM1_CC_IRQn 0 */
+  /* USER CODE BEGIN TIM2_IRQn 0 */
 
-  /* USER CODE END TIM1_CC_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim1);
-  /* USER CODE BEGIN TIM1_CC_IRQn 1 */
-
-  /* USER CODE END TIM1_CC_IRQn 1 */
+  /* USER CODE END TIM2_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim2);
+  /* USER CODE BEGIN TIM2_IRQn 1 */
+//  static int xcnt = 0;
+//    static int ycnt = 0;
+//
+//    if (xSpeed>1 && ((xcnt %xSpeed) == 0)) {
+//  	  if(xPul!=0) {
+//  	    if(xPul>0) {
+//          HAL_GPIO_WritePin(XDIR_GPIO_Port, XDIR_Pin, GPIO_PIN_SET);
+//          xPul--;
+//        }
+//  	    else if(xPul<0) {
+//          HAL_GPIO_WritePin(XDIR_GPIO_Port, XDIR_Pin, GPIO_PIN_RESET);
+//          xPul++;
+//        }
+//  	  //  HAL_GPIO_WritePin(LD_G_GPIO_Port, LD_G_Pin, (lastMode>0)?GPIO_PIN_RESET:GPIO_PIN_SET);
+//  	    HAL_GPIO_TogglePin(XCLK_GPIO_Port, XCLK_Pin);
+//  	  }
+//  	  else {
+//  	  //  HAL_GPIO_WritePin(LD_G_GPIO_Port, LD_G_Pin, (lastMode>0)?GPIO_PIN_SET:GPIO_PIN_RESET);
+//  	  }
+//    }
+//    xcnt++;
+//    if (ySpeed>1 && ((ycnt %ySpeed) == 0)) {
+//   	  if(yPul!=0) {
+//   	    if(yPul>0) {
+//   	      HAL_GPIO_WritePin(YDIR_GPIO_Port, YDIR_Pin, GPIO_PIN_SET);
+//   	      yPul--;
+//   	    }else if(yPul<0) {
+//   	      HAL_GPIO_WritePin(YDIR_GPIO_Port, YDIR_Pin, GPIO_PIN_RESET);
+//   	      yPul++;
+//   	    }
+//   	   // HAL_GPIO_WritePin(LD_R_GPIO_Port, LD_R_Pin, (lastMode>0)?GPIO_PIN_RESET:GPIO_PIN_SET);
+//   		  HAL_GPIO_TogglePin(YCLK_GPIO_Port, YCLK_Pin);
+//   	  }else {
+//   	    //HAL_GPIO_WritePin(LD_R_GPIO_Port, LD_R_Pin, (lastMode>0)?GPIO_PIN_SET:GPIO_PIN_RESET);
+//   	  }
+//     }
+//     ycnt++;
+  /* USER CODE END TIM2_IRQn 1 */
 }
 
 /**

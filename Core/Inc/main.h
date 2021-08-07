@@ -58,18 +58,18 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define XCLK_Pin GPIO_PIN_2
+#define XCLK_GPIO_Port GPIOA
 #define JOY_UP_Pin GPIO_PIN_3
 #define JOY_UP_GPIO_Port GPIOA
-#define JOY_DOWN_Pin GPIO_PIN_5
-#define JOY_DOWN_GPIO_Port GPIOA
 #define XDIR_Pin GPIO_PIN_2
 #define XDIR_GPIO_Port GPIOB
 #define YDIR_Pin GPIO_PIN_8
 #define YDIR_GPIO_Port GPIOE
+#define JOY_DOWN_Pin GPIO_PIN_15
+#define JOY_DOWN_GPIO_Port GPIOE
 #define YCLK_Pin GPIO_PIN_0
 #define YCLK_GPIO_Port GPIOD
-#define XCLK_Pin GPIO_PIN_3
-#define XCLK_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
