@@ -161,7 +161,8 @@ int main(void)
   TIM5->CNT=750000;
   TIM2->CNT=750000;
 
-
+  //initiate USB
+  MX_USB_DEVICE_Init();
 
 
   /* USER CODE END 2 */
