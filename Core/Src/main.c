@@ -83,6 +83,7 @@ extern uint8_t xSpeed, ySpeed;
 extern uint8_t xSen;
 extern uint8_t ySen;
 int highMode = 0;
+int8_t rxbuf[32];
 
 /* USER CODE END PV */
 
@@ -690,25 +691,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 void CDC_ReceiveCallback(uint8_t *buf, uint32_t len)
 {
-
-	  int8_t opbuff[4];
-
-	  if(buf[0]== '0')
+	  for (int i=0;i<=31;i++)
 	  {
-	  *(int32_t*)&(opbuff[0]) = TIM5->CNT;
-
-	  opbuff[3] =(Xpos<<0)	+	(Xneg<<1)	+	(Ypos<<2)	+	(Yneg<<3)	+ 	(Zpos<<4)	+	(Zneg<<5);
-
-
-	  CDC_Transmit_FS(&opbuff[0], sizeof(int32_t));
-	  }
-
-	  else{
-		  opbuff[0]=0xFF;
-		  opbuff[1]=0xFF;
-		  opbuff[2]=0xFF;
-		  opbuff[3]=0xFF;
-		  CDC_Transmit_FS(&opbuff[0], sizeof(int32_t));
+		 rxbuf[i]=buf[i];
 	  }
 }
 
@@ -818,11 +803,99 @@ void StartDefaultTask(void *argument)
 void StartTask02(void *argument)
 {
   /* USER CODE BEGIN StartTask02 */
+	int rec_state=0;
+	  int8_t opbuff[8];
+	  opbuff[0]=0x22;
+	  int read,control;
+#define START 0
+#define CMD 1
+#define ADDRESS 2
+#define DATA 3
+#define CRC 4
+
+
+
+//	  if(buf[0]== 0X22)
+//	  {
+//	  *(int32_t*)&(opbuff[0]) = TIM5->CNT;
+//
+//	  opbuff[3] =(Xpos<<0)	+	(Xneg<<1)	+	(Ypos<<2)	+	(Yneg<<3)	+ 	(Zpos<<4)	+	(Zneg<<5);
+//
+//
+//	  CDC_Transmit_FS(&opbuff[0], sizeof(int32_t));
+//	  }
+//
+//	  else{
+//		  opbuff[0]=0xFF;
+//		  opbuff[1]=0xFF;
+//		  opbuff[2]=0xFF;
+//		  opbuff[3]=0xFF;
+//		  CDC_Transmit_FS(&opbuff[0], sizeof(int32_t));
+//	  }
+
   /* Infinite loop */
   for(;;)
   {
 	  tim2Cnt=__HAL_TIM_GET_COUNTER(&htim2);
 	  tim5Cnt=__HAL_TIM_GET_COUNTER(&htim5);
+	  size_t i = 0;
+	  read=0;
+	  control=0;
+
+	  while (i < 32)
+	  {
+		  uint8_t ch = rxbuf[i];
+		  switch (rec_state)
+		  {
+		  case START:
+			  if (ch==0x22)
+			  {
+				  rec_state=CMD;
+			  }
+			  break;
+		  case CMD:
+			  if (ch==0x30)
+			  {
+				  rec_state=ADDRESS;
+				  read=1;
+			  }
+			  else if (ch==0x66)
+			  {
+				  rec_state=ADDRESS;
+				  control=1;
+			  }
+			  break;
+		  case ADDRESS:
+			  if(ch==0x00)
+			  {
+
+			  }
+			  else if (ch==0x01)
+			  {
+
+			  }
+			  else if (ch==0x02)
+			  {
+
+			  }
+			  else if (ch==0x03)
+			  {
+
+			  }
+			  else if (ch==0x04)
+			  {
+
+			  }
+			  break;
+		  case DATA:
+			  break;
+		  case CRC:
+			  break;
+		  }
+	  i++;
+	  }
+
+
     osDelay(1);
   }
   /* USER CODE END StartTask02 */
