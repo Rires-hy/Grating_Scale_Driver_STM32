@@ -66,8 +66,23 @@ void Error_Handler(void);
 #define XDIR_GPIO_Port GPIOB
 #define YDIR_Pin GPIO_PIN_8
 #define YDIR_GPIO_Port GPIOE
-#define JOY_DOWN_Pin GPIO_PIN_15
-#define JOY_DOWN_GPIO_Port GPIOE
+#define Z__Pin GPIO_PIN_10
+#define Z__GPIO_Port GPIOE
+#define Z__EXTI_IRQn EXTI15_10_IRQn
+#define Z_E11_Pin GPIO_PIN_11
+#define Z_E11_GPIO_Port GPIOE
+#define Z_E11_EXTI_IRQn EXTI15_10_IRQn
+#define Y__Pin GPIO_PIN_12
+#define Y__GPIO_Port GPIOE
+#define Y__EXTI_IRQn EXTI15_10_IRQn
+#define Y_E13_Pin GPIO_PIN_13
+#define Y_E13_GPIO_Port GPIOE
+#define Y_E13_EXTI_IRQn EXTI15_10_IRQn
+#define X__Pin GPIO_PIN_14
+#define X__GPIO_Port GPIOE
+#define X__EXTI_IRQn EXTI15_10_IRQn
+#define X_E15_Pin GPIO_PIN_15
+#define X_E15_GPIO_Port GPIOE
 #define YCLK_Pin GPIO_PIN_0
 #define YCLK_GPIO_Port GPIOD
 /* USER CODE BEGIN Private defines */

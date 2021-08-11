@@ -75,7 +75,7 @@ int cnt,cnt_old ;
 int tim4Cnt,tim5Cnt,tim2Cnt;
 int feedback;
 int laps=0;
-uint8_t X0,Y0;
+uint8_t Xpos,Xneg,Ypos,Yneg,Zpos,Zneg;
 
 extern volatile int32_t xPul;
 extern volatile int32_t yPul;
@@ -587,17 +587,23 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(YDIR_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PE12 PE13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13;
+  /*Configure GPIO pins : Z__Pin Z_E11_Pin Y__Pin Y_E13_Pin */
+  GPIO_InitStruct.Pin = Z__Pin|Z_E11_Pin|Y__Pin|Y_E13_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : JOY_DOWN_Pin */
-  GPIO_InitStruct.Pin = JOY_DOWN_Pin;
+  /*Configure GPIO pin : X__Pin */
+  GPIO_InitStruct.Pin = X__Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(X__GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : X_E15_Pin */
+  GPIO_InitStruct.Pin = X_E15_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  HAL_GPIO_Init(JOY_DOWN_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(X_E15_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : YCLK_Pin */
   GPIO_InitStruct.Pin = YCLK_Pin;
@@ -691,7 +697,7 @@ void CDC_ReceiveCallback(uint8_t *buf, uint32_t len)
 	  {
 	  *(int32_t*)&(opbuff[0]) = TIM5->CNT;
 
-	  opbuff[3] =(X0<<0)+(Y0<<1);
+	  opbuff[3] =(Xpos<<0)	+	(Xneg<<1)	+	(Ypos<<2)	+	(Yneg<<3)	+ 	(Zpos<<4)	+	(Zneg<<5);
 
 
 	  CDC_Transmit_FS(&opbuff[0], sizeof(int32_t));
@@ -725,55 +731,78 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	  if (HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_12)==GPIO_PIN_RESET){
-	 		  	//  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2,GPIO_PIN_RESET);
-	 		  	  X0=1;
+	  if (HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_15)==GPIO_PIN_RESET){
+		  	  Xpos=0;
 	 	  }
 	 	  else {
-	 		//  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2,GPIO_PIN_SET);
-	 		  X0=0;
+	 		  Xpos=1;
 	 	  }
-
-
-	 	  if (HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_13)==GPIO_PIN_RESET){
-	 		  //HAL_GPIO_WritePin(GPIOE, GPIO_PIN_8,GPIO_PIN_RESET);
-	 		  	  Y0=1;
+	 	  if (HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_14)==GPIO_PIN_RESET){
+	 		  Xneg=0;
 	 	  }
 	 	  else  {
-	 		 // HAL_GPIO_WritePin(GPIOE, GPIO_PIN_8,GPIO_PIN_SET);
-	 		  Y0=0;
+	 		  Xneg=1;
+	 	  }
+		  if (HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_13)==GPIO_PIN_RESET){
+			  Ypos=0;
+		 	  }
+		 	  else {
+		 	 Ypos=1;
+		 	  }
+	 if (HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_12)==GPIO_PIN_RESET){
+		 	 Yneg=0;
+		 	  }
+		 	  else  {
+		 	 Yneg=1;
+		 	  }
+
+	  if (HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_10)==GPIO_PIN_RESET){
+		  	 Zpos=0;
+	 	  }
+	 	  else {
+	 		 Zpos=1;
+	 	  }
+
+	  if (HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_11)==GPIO_PIN_RESET){
+		  	  Zneg=0;
+	 	  }
+	 	  else  {
+	 		 Zneg=1;
 	 	  }
 
 
 	 	  if(highMode>1) {
+		 	    xSpeed = 250U;
+		       ySpeed = 250U;
+		       xSen = 2U;
+		       ySen = 2U;
+		       highMode = 1;
+	 	  }else if (highMode < 1) {
+
+
 	 	    xSpeed = 50U;
 	 	    ySpeed = 50U;
 	 	    xSen = 10U;
 	 	    ySen = 10U;
 	 	    highMode = 1;
-	 	  }else if (highMode < 1) {
-	 	    xSpeed = 250U;
-	       ySpeed = 250U;
-	       xSen = 2U;
-	       ySen = 2U;
-	       highMode = 1;
 	 	  }
 
-	 	  if (HAL_GPIO_ReadPin(JOY_DOWN_GPIO_Port, JOY_DOWN_Pin) == GPIO_PIN_SET)
+	 	  if(HAL_GPIO_ReadPin(JOY_UP_GPIO_Port, JOY_UP_Pin) == GPIO_PIN_SET)
 	 	      {
 	 	  	    xPul = -(xSen);
-	 	      }else if (HAL_GPIO_ReadPin(JOY_UP_GPIO_Port, JOY_UP_Pin) == GPIO_PIN_SET)
-	 	      {
-	 	        xPul = (xSen);
 	 	      }
-	 	  if (HAL_GPIO_ReadPin(JOY_DOWN_GPIO_Port, JOY_DOWN_Pin) == GPIO_PIN_SET)
+//	 	  else if (HAL_GPIO_ReadPin(JOY_DOWN_GPIO_Port, JOY_DOWN_Pin) == GPIO_PIN_SET)
+//	 	      {
+//	 	        xPul = (xSen);
+//	 	      }
+	 	  if (HAL_GPIO_ReadPin(JOY_UP_GPIO_Port, JOY_UP_Pin) == GPIO_PIN_SET)
 	 	  {
 	 		  yPul = ySen;
 	 	  }
-	 	  else if (HAL_GPIO_ReadPin(JOY_UP_GPIO_Port, JOY_UP_Pin) == GPIO_PIN_SET)
-	 	  {
-	 		  yPul = -ySen;
-	 	  }
+//	 	  else if (HAL_GPIO_ReadPin(JOY_DOWN_GPIO_Port, JOY_DOWN_Pin) == GPIO_PIN_SET)
+//	 	  {
+//	 		  yPul = -ySen;
+//	 	  }
     osDelay(1);
   }
   /* USER CODE END 5 */
