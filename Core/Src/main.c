@@ -84,7 +84,13 @@ extern uint8_t xSen;
 extern uint8_t ySen;
 int highMode = 0;
 int8_t rxbuf[32];
-
+int spin=0;
+int solder_push=0;
+int push_length=0;
+int spin_length=0;
+int grating_scale_1=0;
+int grating_scale_2=0;
+int PGsend;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -805,13 +811,14 @@ void StartTask02(void *argument)
   /* USER CODE BEGIN StartTask02 */
 	int rec_state=0;
 	  int8_t opbuff[8];
-	  opbuff[0]=0x22;
+
+
 	  int read,control;
 #define START 0
 #define CMD 1
 #define ADDRESS 2
 #define DATA 3
-#define CRC 4
+#define CRC8 4
 
 
 
@@ -864,32 +871,97 @@ void StartTask02(void *argument)
 				  rec_state=ADDRESS;
 				  control=1;
 			  }
+			  else
+			  {
+				  rec_state=START;
+			  }
 			  break;
 		  case ADDRESS:
 			  if(ch==0x00)
 			  {
-
+				  rec_state=DATA;
+				  grating_scale_1=1;
 			  }
 			  else if (ch==0x01)
 			  {
-
+				  rec_state=DATA;
+				  grating_scale_2=1;
 			  }
 			  else if (ch==0x02)
 			  {
-
+				  rec_state=DATA;
+				  PGsend=1;
 			  }
 			  else if (ch==0x03)
 			  {
-
+				  rec_state=DATA;
+				  spin=1;
 			  }
 			  else if (ch==0x04)
 			  {
-
+				  rec_state=DATA;
+				  solder_push=1;
+			  }
+			  else
+			  {
+				  rec_state=START;
 			  }
 			  break;
+
 		  case DATA:
+			  if(grating_scale_1==1)
+			  {
+				  opbuff[0]=0x22;
+				  opbuff[1]=0x30;
+				  opbuff[2]=0x00;
+				  *(int32_t*)&(opbuff[3]) = TIM5->CNT;
+//				  opbuff[6]=0xFF;
+				  opbuff[7]=0xFF;
+				  CDC_Transmit_FS(&opbuff[0], 8);
+			  }
+			  else if(grating_scale_2==1)
+			  {
+				  opbuff[0]=0x22;
+				  opbuff[1]=0x30;
+				  opbuff[2]=0x01;
+				  *(int32_t*)&(opbuff[3]) = TIM2->CNT;
+//				  opbuff[6]=0xFF;
+				  opbuff[7]=0xFF;
+				  CDC_Transmit_FS(&opbuff[0], 8);
+			  }
+			  else if(PGsend==1)
+			  {
+				  opbuff[0]=0x22;
+				  opbuff[1]=0x30;
+				  opbuff[2]=0x02;
+				  opbuff[3] =(Xpos<<0)	+	(Xneg<<1)	+	(Ypos<<2)	+	(Yneg<<3)	+ 	(Zpos<<4)	+	(Zneg<<5);
+				  opbuff[4]=0xFF;opbuff[5]=0xFF;opbuff[6]=0xFF;opbuff[7]=0xFF;
+				  CDC_Transmit_FS(&opbuff[0], 8);
+			  }
+			  else if(spin==1)
+			  {
+				  xPul=10U;
+				  xSpeed = 50U;
+				  spin_length=(rxbuf[i]) + (rxbuf[i+1]<<8);
+			  }
+			  else if (solder_push==1)
+			  {
+				  yPul=10U;
+				  ySpeed = 50U;
+				  push_length=(rxbuf[i]) + (rxbuf[i+1]<<8);
+			  }
+			  rec_state=CRC8;
 			  break;
-		  case CRC:
+		  case CRC8:
+			  grating_scale_1=0;
+			  grating_scale_2=0;
+			  PGsend=0;
+			  read=0;
+			  control=0;
+			  spin=0;
+			  solder_push=0;
+
+			  rec_state=START;
 			  break;
 		  }
 	  i++;

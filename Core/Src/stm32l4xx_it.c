@@ -34,6 +34,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+extern int push_length;
+extern int spin_length;
 
 /* USER CODE END PD */
 
@@ -218,16 +220,22 @@ void TIM1_UP_TIM16_IRQHandler(void)
 
       if (xSpeed>1 && ((xcnt %xSpeed) == 0)) {
     	  if(xPul!=0) {
+    		  int i=0;
     	    if(xPul>0) {
             HAL_GPIO_WritePin(XDIR_GPIO_Port, XDIR_Pin, GPIO_PIN_SET);
-            xPul--;
+           // xPul--;
           }
     	    else if(xPul<0) {
             HAL_GPIO_WritePin(XDIR_GPIO_Port, XDIR_Pin, GPIO_PIN_RESET);
-            xPul++;
+           // xPul++;
           }
     	  //  HAL_GPIO_WritePin(LD_G_GPIO_Port, LD_G_Pin, (lastMode>0)?GPIO_PIN_RESET:GPIO_PIN_SET);
     	    HAL_GPIO_TogglePin(XCLK_GPIO_Port, XCLK_Pin);
+    	    i++;
+    	    if(i>=2*spin_length)
+    	    {
+    	    	xPul=0;
+    	    }
     	  }
     	  else {
     	  //  HAL_GPIO_WritePin(LD_G_GPIO_Port, LD_G_Pin, (lastMode>0)?GPIO_PIN_SET:GPIO_PIN_RESET);
@@ -236,6 +244,7 @@ void TIM1_UP_TIM16_IRQHandler(void)
       xcnt++;
       if (ySpeed>1 && ((ycnt %ySpeed) == 0)) {
      	  if(yPul!=0) {
+     		 int i=0;
      	    if(yPul>0) {
      	      HAL_GPIO_WritePin(YDIR_GPIO_Port, YDIR_Pin, GPIO_PIN_SET);
      	      yPul--;
@@ -245,6 +254,11 @@ void TIM1_UP_TIM16_IRQHandler(void)
      	    }
      	   // HAL_GPIO_WritePin(LD_R_GPIO_Port, LD_R_Pin, (lastMode>0)?GPIO_PIN_RESET:GPIO_PIN_SET);
      		  HAL_GPIO_TogglePin(YCLK_GPIO_Port, YCLK_Pin);
+     		 i++;
+				if(i>=2*push_length)
+				{
+					yPul=0;
+				}
      	  }else {
      	    //HAL_GPIO_WritePin(LD_R_GPIO_Port, LD_R_Pin, (lastMode>0)?GPIO_PIN_SET:GPIO_PIN_RESET);
      	  }
