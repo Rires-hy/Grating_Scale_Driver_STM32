@@ -92,6 +92,7 @@ int grating_scale_1=0;
 int grating_scale_2=0;
 int PGsend;
 size_t k = 99;
+uint8_t opbuff[8];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -112,10 +113,10 @@ void StartTask03(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-unsigned short CRCcalc(uint16_t* ptr, int len)
+uint16_t CRCcalc(uint8_t* ptr, uint32_t len)
 {
- unsigned int i;
- unsigned short crc = 0xFFFF;  //crc16位寄存器初始值
+ uint32_t i;
+ uint16_t crc = 0xFFFF;  //crc16位寄存器初始值
 
  while (len--)
  {
@@ -831,7 +832,7 @@ void StartTask02(void *argument)
 {
   /* USER CODE BEGIN StartTask02 */
 	int rec_state=0;
-	  int8_t opbuff[8];
+
 
 
 	  int read,control;
