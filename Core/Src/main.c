@@ -83,7 +83,7 @@ extern uint8_t xSpeed, ySpeed;
 extern uint8_t xSen;
 extern uint8_t ySen;
 int highMode = 0;
-int8_t rxbuf[32];
+uint32_t rxbuf[32];
 int spin=0;
 int solder_push=0;
 int push_length=0;
@@ -112,7 +112,25 @@ void StartTask03(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+unsigned short CRCcalc(uint16_t* ptr, int len)
+{
+ unsigned int i;
+ unsigned short crc = 0xFFFF;  //crc16位寄存器初始值
 
+ while (len--)
+ {
+  crc ^= *ptr++;
+  for (i = 0; i < 8; ++i)
+  {
+   if (crc & 1)
+    crc = (crc >> 1) ^ 0xA001; //多项式 POLY（0x8005)的高低位交换值，这是由于其模型的一些参数决定的
+   else
+    crc = (crc >> 1);
+  }
+ }
+
+ return crc;
+}
 /* USER CODE END 0 */
 
 /**
@@ -159,8 +177,8 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim1);
   HAL_TIM_Base_Start_IT(&htim2);
 
-  TIM5->CNT=765432;
-  TIM2->CNT=998998;
+  TIM5->CNT=654321;
+  TIM2->CNT=123456;
 
   //initiate USB
   MX_USB_DEVICE_Init();
@@ -912,25 +930,51 @@ void StartTask02(void *argument)
 			  break;
 
 		  case DATA:
-			  if(grating_scale_1==1)
+
+			  if(	(read==1)	&&	(grating_scale_1==1)	)
 			  {
 				  opbuff[0]=0x22;
 				  opbuff[1]=0x30;
 				  opbuff[2]=0x00;
 				  *(int32_t*)&(opbuff[3]) = TIM5->CNT;
-//				  opbuff[6]=0xFF;
-				  opbuff[7]=0xFF;
+
+				  unsigned short crc = CRCcalc(opbuff,6);
+				 *(int16_t*)&(opbuff[6]) = crc;
 				  CDC_Transmit_FS(&opbuff[0], 8);
 			  }
-			  else if(grating_scale_2==1)
+			  else if(	(read==1)	&&	(grating_scale_2==1)	)
 			  {
 				  opbuff[0]=0x22;
 				  opbuff[1]=0x30;
 				  opbuff[2]=0x01;
 				  *(int32_t*)&(opbuff[3]) = TIM2->CNT;
-//				  opbuff[6]=0xFF;
-				  opbuff[7]=0xFF;
+				  unsigned short crc= CRCcalc(opbuff,6);
+				 *(int16_t*)&(opbuff[6]) = crc;
 				  CDC_Transmit_FS(&opbuff[0], 8);
+			  }
+			  else if(	(control==1)	&&	(grating_scale_1==1)	)
+			  {
+				  TIM5->CNT=750000;
+				  opbuff[0]=0x22;
+				  opbuff[1]=0x66;
+				  opbuff[2]=0x00;
+				  opbuff[3]=0x00; opbuff[4]=0x00; opbuff[5]=0x00; opbuff[6]=0x00; opbuff[7]=0x00;
+				  unsigned short crc= CRCcalc(opbuff,6);
+				 *(int16_t*)&(opbuff[6]) = crc;
+				  CDC_Transmit_FS(&opbuff[0], 8);
+
+			  }
+			  else if(	(control==1)	&&	(grating_scale_2==1)	)
+			  {
+				  TIM2->CNT=750000;
+				  opbuff[0]=0x22;
+				  opbuff[1]=0x66;
+				  opbuff[2]=0x01;
+				  opbuff[3]=0x00; opbuff[4]=0x00; opbuff[5]=0x00; opbuff[6]=0x00; opbuff[7]=0x00;
+				  unsigned short crc= CRCcalc(opbuff,6);
+				 *(int16_t*)&(opbuff[6]) = crc;
+				  CDC_Transmit_FS(&opbuff[0], 8);
+
 			  }
 			  else if(PGsend==1)
 			  {
@@ -938,20 +982,38 @@ void StartTask02(void *argument)
 				  opbuff[1]=0x30;
 				  opbuff[2]=0x02;
 				  opbuff[3] =(Xpos<<0)	+	(Xneg<<1)	+	(Ypos<<2)	+	(Yneg<<3)	+ 	(Zpos<<4)	+	(Zneg<<5);
-				  opbuff[4]=0xFF;opbuff[5]=0xFF;opbuff[6]=0xFF;opbuff[7]=0xFF;
+				  unsigned short crc = CRCcalc(opbuff,6);
+				 *(int16_t*)&(opbuff[6]) = crc;
 				  CDC_Transmit_FS(&opbuff[0], 8);
 			  }
 			  else if(spin==1)
 			  {
-				  xPul=10U;
-				  xSpeed = 50U;
+
 				  spin_length=(rxbuf[k]) + (rxbuf[k+1]<<8);
+				  xPul=spin_length;
+				  xSpeed = 50U;
+				  opbuff[0]=0x22;
+				  opbuff[1]=0x66;
+				  opbuff[2]=0x03;
+				  opbuff[3]=rxbuf[k]; opbuff[4]=rxbuf[k+1]; opbuff[5]=0x00; opbuff[6]=0x00; opbuff[7]=0x00;
+				  unsigned short crc= CRCcalc(opbuff,6);
+				 *(int16_t*)&(opbuff[6]) = crc;
+				  CDC_Transmit_FS(&opbuff[0], 8);
+
 			  }
 			  else if (solder_push==1)
 			  {
-				  yPul=10U;
+
+				 push_length= (	((rxbuf[k+1])<<8) 	+	(rxbuf[k]) 	) ;
+				  yPul=push_length;
 				  ySpeed = 50U;
-				  push_length=(rxbuf[k]) + (rxbuf[k+1]<<8);
+				  opbuff[0]=0x22;
+				  opbuff[1]=0x66;
+				  opbuff[2]=0x04;
+				  opbuff[3]=rxbuf[k]; opbuff[4]=rxbuf[k+1]; opbuff[5]=0x00; opbuff[6]=0x00; opbuff[7]=0x00;
+				  unsigned short crc= CRCcalc(opbuff,6);
+				 *(int16_t*)&(opbuff[6]) = crc;
+				  CDC_Transmit_FS(&opbuff[0], 8);
 			  }
 			  rec_state=CRC8;
 			  break;
