@@ -91,6 +91,7 @@ int spin_length=0;
 int grating_scale_1=0;
 int grating_scale_2=0;
 int PGsend;
+size_t k = 99;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -158,8 +159,8 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim1);
   HAL_TIM_Base_Start_IT(&htim2);
 
-  TIM5->CNT=750000;
-  TIM2->CNT=750000;
+  TIM5->CNT=765432;
+  TIM2->CNT=998998;
 
   //initiate USB
   MX_USB_DEVICE_Init();
@@ -252,7 +253,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
   RCC_OscInitStruct.PLL.PLLM = 1;
-  RCC_OscInitStruct.PLL.PLLN = 8;
+  RCC_OscInitStruct.PLL.PLLN = 40;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV7;
   RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
   RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
@@ -269,7 +270,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
   {
     Error_Handler();
   }
@@ -277,7 +278,7 @@ void SystemClock_Config(void)
   PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLLSAI1;
   PeriphClkInit.PLLSAI1.PLLSAI1Source = RCC_PLLSOURCE_MSI;
   PeriphClkInit.PLLSAI1.PLLSAI1M = 1;
-  PeriphClkInit.PLLSAI1.PLLSAI1N = 8;
+  PeriphClkInit.PLLSAI1.PLLSAI1N = 24;
   PeriphClkInit.PLLSAI1.PLLSAI1P = RCC_PLLP_DIV7;
   PeriphClkInit.PLLSAI1.PLLSAI1Q = RCC_PLLQ_DIV2;
   PeriphClkInit.PLLSAI1.PLLSAI1R = RCC_PLLR_DIV2;
@@ -698,10 +699,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 void CDC_ReceiveCallback(uint8_t *buf, uint32_t len)
 {
-	  for (int i=0;i<=31;i++)
+	  for (int i=0;i<=16;i++)
 	  {
 		 rxbuf[i]=buf[i];
 	  }
+	  k=0;
 }
 
 
@@ -846,13 +848,13 @@ void StartTask02(void *argument)
   {
 	  tim2Cnt=__HAL_TIM_GET_COUNTER(&htim2);
 	  tim5Cnt=__HAL_TIM_GET_COUNTER(&htim5);
-	  size_t i = 0;
+
 	  read=0;
 	  control=0;
 
-	  while (i < 32)
+	  while (k < 16)
 	  {
-		  uint8_t ch = rxbuf[i];
+		  uint8_t ch = rxbuf[k];
 		  switch (rec_state)
 		  {
 		  case START:
@@ -943,13 +945,13 @@ void StartTask02(void *argument)
 			  {
 				  xPul=10U;
 				  xSpeed = 50U;
-				  spin_length=(rxbuf[i]) + (rxbuf[i+1]<<8);
+				  spin_length=(rxbuf[k]) + (rxbuf[k+1]<<8);
 			  }
 			  else if (solder_push==1)
 			  {
 				  yPul=10U;
 				  ySpeed = 50U;
-				  push_length=(rxbuf[i]) + (rxbuf[i+1]<<8);
+				  push_length=(rxbuf[k]) + (rxbuf[k+1]<<8);
 			  }
 			  rec_state=CRC8;
 			  break;
@@ -965,7 +967,7 @@ void StartTask02(void *argument)
 			  rec_state=START;
 			  break;
 		  }
-	  i++;
+	  k++;
 	  }
 
 
