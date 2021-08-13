@@ -86,8 +86,8 @@ int highMode = 0;
 uint32_t rxbuf[32];
 int spin=0;
 int solder_push=0;
-int push_length=0;
-int spin_length=0;
+int16_t push_length=0;
+int16_t spin_length=0;
 int grating_scale_1=0;
 int grating_scale_2=0;
 int PGsend;
@@ -116,7 +116,7 @@ void StartTask03(void *argument);
 uint16_t CRCcalc(uint8_t* ptr, uint32_t len)
 {
  uint32_t i;
- uint16_t crc = 0xFFFF;  //crc16位寄存器初始值
+ uint16_t crc = 0xFFFF;  //crc16位寄存器初始�?
 
  while (len--)
  {
@@ -124,7 +124,7 @@ uint16_t CRCcalc(uint8_t* ptr, uint32_t len)
   for (i = 0; i < 8; ++i)
   {
    if (crc & 1)
-    crc = (crc >> 1) ^ 0xA001; //多项式 POLY（0x8005)的高低位交换值，这是由于其模型的一些参数决定的
+    crc = (crc >> 1) ^ 0xA001; //多项�? POLY�?0x8005)的高低位交换值，这是由于其模型的�?些参数决定的
    else
     crc = (crc >> 1);
   }
@@ -178,8 +178,8 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim1);
   HAL_TIM_Base_Start_IT(&htim2);
 
-  TIM5->CNT=654321;
-  TIM2->CNT=123456;
+  TIM5->CNT=750000;
+  TIM2->CNT=750000;
 
   //initiate USB
   MX_USB_DEVICE_Init();
@@ -630,7 +630,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin : X_E15_Pin */
   GPIO_InitStruct.Pin = X_E15_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(X_E15_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : YCLK_Pin */
@@ -983,14 +983,14 @@ void StartTask02(void *argument)
 				  opbuff[1]=0x30;
 				  opbuff[2]=0x02;
 				  opbuff[3] =(Xpos<<0)	+	(Xneg<<1)	+	(Ypos<<2)	+	(Yneg<<3)	+ 	(Zpos<<4)	+	(Zneg<<5);
+				  opbuff[4]=0x00; opbuff[5]=0x00; opbuff[6]=0x00; opbuff[7]=0x00;
 				  unsigned short crc = CRCcalc(opbuff,6);
 				 *(int16_t*)&(opbuff[6]) = crc;
 				  CDC_Transmit_FS(&opbuff[0], 8);
 			  }
 			  else if(spin==1)
 			  {
-
-				  spin_length=(rxbuf[k]) + (rxbuf[k+1]<<8);
+				  spin_length= (int16_t)((rxbuf[k]) | (rxbuf[k+1]<<8));
 				  xPul=spin_length;
 				  xSpeed = 50U;
 				  opbuff[0]=0x22;
@@ -1005,7 +1005,7 @@ void StartTask02(void *argument)
 			  else if (solder_push==1)
 			  {
 
-				 push_length= (	((rxbuf[k+1])<<8) 	+	(rxbuf[k]) 	) ;
+				push_length= (int16_t)((rxbuf[k]) | (rxbuf[k+1]<<8));
 				  yPul=push_length;
 				  ySpeed = 50U;
 				  opbuff[0]=0x22;
