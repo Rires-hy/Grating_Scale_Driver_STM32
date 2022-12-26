@@ -36,5 +36,10 @@ the maximum speed within accuracy: 69 KHz
 ![image](https://user-images.githubusercontent.com/69144773/209584581-6a5c77fa-32d7-4c75-986b-f77c7b33e9eb.png)
 ![image](https://user-images.githubusercontent.com/69144773/209584621-7b912cd7-a923-437c-bdb1-37012eeddbda.png)
 
-# Layout
+# Schematics & Layout
+![3ff80da129753f405f2fcff8f2f1082](https://user-images.githubusercontent.com/69144773/209585217-aaa31031-f2e9-4a6b-aa18-223d03c314df.png)
 ![image](https://user-images.githubusercontent.com/69144773/209584978-e002a1c3-da26-409f-b410-919f5631628f.png)
+![610abab6771baf7e395601c519275ff](https://user-images.githubusercontent.com/69144773/209585195-7a40567c-77e7-419f-b435-c9ed47450eaa.png)
+
+![2131a4e06694a5bf3f311fbed44fe7e](https://user-images.githubusercontent.com/69144773/209585182-1625283e-0238-4179-9448-1c299ed18155.png)
+
