@@ -50,3 +50,7 @@ the maximum speed within accuracy: 69 KHz
 ![IMG_20210813_195344](https://user-images.githubusercontent.com/69144773/209585467-8a9bd552-945e-45bc-be94-c103b3329d84.jpg)
 
 
+
+https://user-images.githubusercontent.com/69144773/209586232-2a729b8a-9bfb-4708-8a92-6f64b0c2ffbb.mp4
+
+
