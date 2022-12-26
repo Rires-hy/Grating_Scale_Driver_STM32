@@ -40,6 +40,13 @@ the maximum speed within accuracy: 69 KHz
 ![3ff80da129753f405f2fcff8f2f1082](https://user-images.githubusercontent.com/69144773/209585217-aaa31031-f2e9-4a6b-aa18-223d03c314df.png)
 ![image](https://user-images.githubusercontent.com/69144773/209584978-e002a1c3-da26-409f-b410-919f5631628f.png)
 ![610abab6771baf7e395601c519275ff](https://user-images.githubusercontent.com/69144773/209585195-7a40567c-77e7-419f-b435-c9ed47450eaa.png)
-
 ![2131a4e06694a5bf3f311fbed44fe7e](https://user-images.githubusercontent.com/69144773/209585182-1625283e-0238-4179-9448-1c299ed18155.png)
+![IMG_20210809_155351](https://user-images.githubusercontent.com/69144773/209585433-89ca6d92-0958-40a8-834c-dc71405b22aa.jpg)
+![IMG_20210812_183504](https://user-images.githubusercontent.com/69144773/209585449-978aa9d2-46f0-49e3-bcbf-f6b64b387c5e.jpg)
+![IMG_20210812_185827](https://user-images.githubusercontent.com/69144773/209585454-6400e2c3-6e4f-44c7-884e-065c68b05aa4.jpg)
+![IMG_20210813_122857](https://user-images.githubusercontent.com/69144773/209585456-f49446dc-652e-4e0a-8197-6800975223b4.jpg)
+![IMG_20210813_191708](https://user-images.githubusercontent.com/69144773/209585463-51067f6c-d93b-44d9-b346-a9b11802bb6d.jpg)
+![IMG_20210813_192514](https://user-images.githubusercontent.com/69144773/209585466-1f67f3d8-4250-497e-aa7e-cf32c7ea62cb.jpg)
+![IMG_20210813_195344](https://user-images.githubusercontent.com/69144773/209585467-8a9bd552-945e-45bc-be94-c103b3329d84.jpg)
+
 
